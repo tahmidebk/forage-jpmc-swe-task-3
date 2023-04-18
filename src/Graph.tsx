@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Table } from '@finos/perspective';
 import { ServerRespond } from './DataStreamer';
-import { DataManipulator } from './DataManipulator';
+import { DataManipulator, Row } from './DataManipulator';
 import './Graph.css';
 
 interface IProps {
@@ -10,9 +10,12 @@ interface IProps {
 
 interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
+  notifyResize: () => void,
 }
+
 class Graph extends Component<IProps, {}> {
   table: Table | undefined;
+  prevData: ServerRespond[] = [];
 
   render() {
     return React.createElement('perspective-viewer');
@@ -49,12 +52,16 @@ class Graph extends Component<IProps, {}> {
   }
 
   componentDidUpdate() {
-    if (this.table) {
+    if (this.table && this.props.data !== this.prevData) {
       this.table.update(
         DataManipulator.generateRow(this.props.data),
       );
+      this.prevData = this.props.data;
+      const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+      elem.notifyResize();
     }
   }
 }
 
 export default Graph;
+
